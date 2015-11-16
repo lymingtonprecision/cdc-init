@@ -1,4 +1,4 @@
-(defproject cdc-init "1.0.0"
+(defproject cdc-init "1.0.1-SNAPSHOT"
   :description "LPE Change Data Capture initialization service"
   :url "https://github.com/lymingtonprecision/cdc-init"
   :license {:name "Eclipse Public License"
