@@ -1,0 +1,10 @@
+begin
+  ifsapp.lpe_change_data_capture_api.create_cdc_trigger(
+    :schema,
+    :table,
+    :queue,
+    null,
+    :trigger,
+    false
+  );
+end;
