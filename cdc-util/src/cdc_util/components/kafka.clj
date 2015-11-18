@@ -24,8 +24,8 @@
   component/Lifecycle
   (start [this]
     (let [options (env->config env env-keys->option-names)
-          brokers (-> options zk/brokers zk/broker-list)
-          config (merge options {"bootstrap.servers" brokers
+          brokers (-> options zk/brokers)
+          config (merge options {"bootstrap.servers" (zk/broker-list brokers)
                                  "group.id" consumer-group
                                  "auto.commit.enable" "false"})
           producer (kafka/producer config
