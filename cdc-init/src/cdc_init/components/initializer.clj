@@ -124,8 +124,9 @@
              (pipe-ret-last updates-ch false)
              async/<!!
              ((fn [ccd]
-                (log/info "preparation complete for" (:table ccd) " now seeding")
-                ccd))
+                (when (not= :error (:status ccd))
+                  (log/info "preparation complete for" (:table ccd) " now seeding")
+                  ccd)))
              (initialize topic-store seed-store change-data-store)
              (pipe-ret-last updates-ch false)
              async/<!!)
