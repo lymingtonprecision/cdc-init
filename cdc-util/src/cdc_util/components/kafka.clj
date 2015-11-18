@@ -1,4 +1,4 @@
-(ns cdc-init.components.kafka
+(ns cdc-util.components.kafka
   "A component for connecting to and interacting with Apache Kafka."
   (:require [com.stuartsierra.component :as component]
             [clj-kafka.zk :as zk]

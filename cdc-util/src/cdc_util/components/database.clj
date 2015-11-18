@@ -1,4 +1,4 @@
-(ns cdc-init.components.database
+(ns cdc-util.components.database
   "A component to manage (pooled) database connections using HikariCP.
 
   Defaults to using the Oracle Thin driver for connections with a
