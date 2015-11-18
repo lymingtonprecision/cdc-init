@@ -6,7 +6,7 @@
             [cdc-init.components.initializer :refer [new-initializer]]
             [cdc-init.components.seed-store :refer [new-seed-store]]
             [cdc-init.components.topic-store :refer [new-topic-store]]
-            [cdc-util.components.database :refer [new-database]]
+            [cdc-util.components.database :refer [new-database-from-env]]
             [cdc-util.components.kafka :refer [new-kafka]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -22,9 +22,8 @@
   ([] (new-system env))
   ([env]
    (component/system-map
-    :env env
-    :database (new-database)
-    :kafka (new-kafka)
+    :database (new-database-from-env env)
+    :kafka (new-kafka (:zookeeper env))
     :change-data-store (new-change-data-store)
     :seed-store (new-seed-store)
     :topic-store (new-topic-store)

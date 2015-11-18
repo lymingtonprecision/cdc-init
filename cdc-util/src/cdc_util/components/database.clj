@@ -22,22 +22,12 @@
     :port-number 1521}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ENV key mappings
-
-(def env-keys->option-names
-  [[:db-name :database-name]
-   [:db-server :server-name]
-   [:db-user :username]
-   [:db-password :password]])
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Component
 
-(defrecord Database [env]
+(defrecord Database [options]
   component/Lifecycle
   (start [this]
-    (let [o (merge default-options
-                   (env->config env env-keys->option-names))
+    (let [o (merge default-options options)
           ds (hk/make-datasource o)]
       (assoc this :options o :datasource ds)))
   (stop [this]
@@ -51,13 +41,35 @@
 (defn new-database
   "Returns a new, un-started, database component.
 
-  Requires an `:env` component containing the key/value mappings for:
+  Must be provided with a map of datasource options specifying, at a
+  minimum, the:
 
-  * `:db-server`
-  * `:db-name`
-  * `:db-user`
-  * `:db-password`"
-  []
-  (component/using
-   (map->Database {})
-   [:env]))
+  * `:database-name`
+  * `:server-name`
+  * `:username`
+  * `:password`"
+  [opts]
+  (component/using (->Database opts) []))
+
+(defn env->database-opts
+  "Returns a map of component options derived from the given
+  environment variable map.
+
+  The supported env variables are:
+
+  * `:db-name` (`DB_NAME`)
+  * `:db-server` (`DB_SERVER`)
+  * `:db-user` (`DB_USER`)
+  * `:db-password (`DB_PASSWORD`)"
+  [env]
+  (env->config env [[:db-name :database-name]
+                    [:db-server :server-name]
+                    [:db-user :username]
+                    [:db-password :password]]))
+
+(defn new-database-from-env
+  "Returns a new, un-started, database component initialized with
+  options from the given map of environment variables (per
+  `env->database-opts`.)"
+  [env]
+  (new-database (env->database-opts env)))

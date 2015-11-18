@@ -12,22 +12,17 @@
   "cdc-init")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ENV var mappings
-
-(def env-keys->option-names
-  [[:zookeeper "zookeeper.connect"]])
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Component
 
-(defrecord Kafka [env]
+(defrecord Kafka [zookeeper]
   component/Lifecycle
   (start [this]
-    (let [options (env->config env env-keys->option-names)
-          brokers (-> options zk/brokers)
-          config (merge options {"bootstrap.servers" (zk/broker-list brokers)
-                                 "group.id" consumer-group
-                                 "auto.commit.enable" "false"})
+    (let [zk-connect {"zookeeper.connect" zookeeper}
+          brokers (zk/brokers zk-connect)
+          config (merge zk-connect
+                        {"bootstrap.servers" (zk/broker-list brokers)
+                         "group.id" consumer-group
+                         "auto.commit.enable" "false"})
           producer (kafka/producer config
                                    (kafka/string-serializer)
                                    (kafka/string-serializer))]
@@ -41,11 +36,7 @@
 ;; Public
 
 (defn new-kafka
-  "Returns a new, un-started, Kafka component.
-
-  Requires an `:env` map containing a `:zookeeper` key/connection
-  string value."
-  []
-  (component/using
-   (map->Kafka {})
-   [:env]))
+  "Returns a new, un-started, Kafka component that will connect to
+  ZooKeeper using the provided connection string."
+  [zookeeper]
+  (component/using (->Kafka zookeeper) []))
