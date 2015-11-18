@@ -35,15 +35,15 @@
   "Creates the specified control topic within the given Kafka
   configuration."
   [{zkc "zookeeper.connect" :as kafka-config} topic]
-  (let [brokers (-> kafka-config kafka.zk/brokers kafka.zk/broker-list)
+  (let [brokers (-> kafka-config kafka.zk/brokers)
         replicas (min 3 (count brokers))]
     (log/info "creating control topic" topic)
     (with-open [zk (kafka.admin/zk-client zkc)]
       (kafka.admin/create-topic
        zk topic
        {:partitions 1
-        :config {"cleanup.policy" "compact"
-                 "replication.factor" replicas}}))))
+        :replication-factor replicas
+        :config {"cleanup.policy" "compact"}}))))
 
 (defn reset-offset!
   "Resets the consumer offset on the specified topic of the given
