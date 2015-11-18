@@ -14,15 +14,16 @@
   (:import [kafka.message Message MessageAndMetadata]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; msgs->submitted-ccds
+;; msgs->ccds-with-status
 
-(defspec submitted-filters-out-submitted-defs-from-message-collections
+(defspec msgs->ccds-with-status-filters-message-collections
   (chuck/for-all
    [topic gen/string-ascii
-    ccds (gen/vector (gen/tuple gen/nat gen-change-capture-def))]
+    ccds (gen/vector (gen/tuple gen/nat gen-change-capture-def))
+    status gen-rand-ccd-status]
    (let [msgs (map (fn [[offset ccd]] (ccd->msg ccd topic offset)) ccds)
-         exp (filter #(= :submitted (:status %)) (map second ccds))]
-     (is (= exp (transduce msgs->submitted-ccds conj [] msgs))))))
+         exp (filter #(= status (:status %)) (map second ccds))]
+     (is (= exp (transduce (msgs->ccds-with-status status) conj [] msgs))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; topic->ccds-to-initialize

@@ -152,7 +152,9 @@
               _ (async/onto-chan queue (sort-by :timestamp ccds) false)
               ;; create a channel to filter out new submissions from updates
               ;; ... and pipe those new submissions through to the work queue
-              submissions (async/chan 1 filter/msgs->submitted-ccds)
+              submissions (async/chan
+                           1
+                           (filter/msgs->ccds-with-status :submitted))
               _ (async/pipe submissions queue)
               ;; synchronously post progress updates back to kafka
               updates (updates-chan (:producer kafka) control-topic)]

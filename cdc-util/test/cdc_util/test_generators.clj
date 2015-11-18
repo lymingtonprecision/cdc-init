@@ -11,6 +11,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public
 
+(def gen-rand-ccd-status
+  (gen/elements
+   [:submitted
+    :prepared
+    :active
+    :error
+    :queue-created
+    :topic-created
+    :trigger-created]))
+
 (def gen-non-empty-string
   (gen/such-that
    #(not (string/blank? %))
@@ -31,13 +41,7 @@
 (def gen-change-capture-def
   (gen/hash-map
    :table gen-non-empty-string
-   :status (gen/elements [:submitted
-                          :prepared
-                          :active
-                          :error
-                          :queue-created
-                          :topic-created
-                          :trigger-created])
+   :status gen-rand-ccd-status
    :timestamp gen-rand-time
    :trigger gen-non-empty-string
    :queue gen-non-empty-string

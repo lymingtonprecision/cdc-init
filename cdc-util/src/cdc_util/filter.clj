@@ -37,16 +37,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public
 
-(def msgs->submitted-ccds
-  "A transducer that converts Kafka `MessageAndMetadata` instances to
-  Change Capture Definition records and returns only those with a
-  `:status` of `:submitted`.
+(defn msgs->ccds-with-status
+  "Returns a transducer that converts Kafka `MessageAndMetadata`
+  instances to Change Capture Definition records and returns only
+  those with the specified status.
 
   **Note:** the provided `MessageAndMetadata` instances **must**
   be using the `cdc-init.format/ccd-decoder` to return the message
   bodies as Change Data Capture Definition records."
+  [status]
   (comp (map #(.message %))
-        (filter #(= :submitted (:status %)))))
+        (filter #(= status (:status %)))))
 
 (defn topic->ccds-to-initialize
   "Given a reduceable collection of `MessageAndMetadata` records
