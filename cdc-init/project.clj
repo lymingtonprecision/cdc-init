@@ -1,4 +1,4 @@
-(defproject cdc-init "1.0.1-SNAPSHOT"
+(defproject lymingtonprecision/cdc-init "1.0.1-SNAPSHOT"
   :description "LPE Change Data Capture initialization service"
   :url "https://github.com/lymingtonprecision/cdc-init"
   :license {:name "Eclipse Public License"
@@ -24,9 +24,10 @@
 
                  ;; kafka
                  [clj-kafka "0.3.2"]
-                 [org.clojars.ah45/clj-kafka-util "0.1.1"]]
+                 [org.clojars.ah45/clj-kafka-util "0.1.1"]
 
-  :source-paths ["src" "../cdc-util/src"]
+                 ;; utils
+                 [lymingtonprecision/cdc-util "0.1.0-SNAPSHOT"]]
 
   :main cdc-init.main
   :aot [cdc-init.main]
@@ -34,12 +35,13 @@
   :uberjar-name "cdc-init-standalone.jar"
 
   :profiles {:repl {:source-paths ["dev"]}
-             :dev {:source-paths ["../cdc-util/test"]
-                   :dependencies [[reloaded.repl "0.2.1"]
+             :dev {:dependencies [[reloaded.repl "0.2.1"]
                                   [org.clojure/test.check "0.8.2"]
                                   [com.gfredericks/test.chuck "0.2.0"]]}}
 
   :repl-options {:init-ns user :init (reloaded.repl/init)}
+
+  :checkout-deps-shares [:source-paths :test-paths]
 
   :release-tasks [["vcs" "assert-committed"]
                   ["change" "version"
