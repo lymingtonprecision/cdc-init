@@ -54,33 +54,3 @@
         (gen/return (java.sql.Timestamp. (.getTime (java.util.Date.))))])))]
    (is (= valid-ccd (validate-ccd valid-ccd)))
    (is (nil? (validate-ccd invalid-ccd)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; noop-transducer
-
-(deftest noop-transducer-literally-does-nothing
-  (is (empty? (into [] (noop-transducer) (range 1 100)))))
-
-(deftest noop-transducer-calls-fn-with-input
-  (let [vals (gen/sample gen/any-printable 100)
-        inputs (atom [])]
-    (is (empty? (into [] (noop-transducer (fn [v] (swap! inputs conj v))) vals)))
-    (is (= vals @inputs))))
-
-(deftest noop-transducer-works-with-channels
-  (let [inputs [(range 1 100) (range 42 222)]
-        vals (atom [])
-        ch (async/chan 1 (noop-transducer (fn [v] (swap! vals conj v))))
-        l (doall
-           (map
-            (fn [vs]
-              (async/go-loop [vs vs]
-                (async/>! ch (first vs))
-                (when-let [vs (seq (rest vs))]
-                  (recur vs))))
-            inputs))]
-    (loop [chs l]
-      (let [[_ ch] (async/alts!! chs)]
-        (when (> (count chs) 1)
-          (recur (remove #(= % ch) chs)))))
-    (is (= (-> inputs flatten sort) (sort @vals)))))

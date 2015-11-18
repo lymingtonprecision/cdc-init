@@ -10,10 +10,13 @@
             [clj-kafka.zk :as kafka.zk]
             [clj-kafka.consumer.util :as k.c.util]
 
-            [cdc-util.async :refer [pipe-ret-last go-till-closed]]
+            [cdc-util.async
+             :refer [pipe-ret-last
+                     go-till-closed
+                     noop-transducer]]
             [cdc-util.filter :as filter]
             [cdc-util.format :as format]
-            [cdc-util.validate :refer [validate-ccd noop-transducer]]
+            [cdc-util.validate :refer [validate-ccd]]
 
             [cdc-init.core :refer :all]
             [cdc-init.protocols :refer :all]))
