@@ -10,13 +10,13 @@
             [clj-kafka.zk :as kafka.zk]
             [clj-kafka.consumer.util :as k.c.util]
 
-            [cdc-init.filter :as filter]
-            [cdc-init.format :as format]
+            [cdc-util.async :refer [pipe-ret-last go-till-closed]]
+            [cdc-util.filter :as filter]
+            [cdc-util.format :as format]
+            [cdc-util.validate :refer [validate-ccd noop-transducer]]
 
             [cdc-init.core :refer :all]
-            [cdc-init.protocols :refer :all]
-            [cdc-init.util :refer [validate-ccd noop-transducer]]
-            [cdc-init.async.util :refer [pipe-ret-last go-till-closed]]))
+            [cdc-init.protocols :refer :all]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Kafka/control topic interaction

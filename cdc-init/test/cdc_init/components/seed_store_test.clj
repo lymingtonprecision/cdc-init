@@ -7,7 +7,7 @@
 
             [clojure.string :as string]
             [cheshire.core :as cheshire]
-            [cdc-init.test-generators :refer :all]
+            [cdc-util.test-generators :refer :all]
 
             [cdc-init.components.seed-store :refer :all]))
 

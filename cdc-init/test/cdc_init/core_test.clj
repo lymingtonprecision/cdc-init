@@ -9,7 +9,7 @@
             [clj-time.core :as time]
 
             [cdc-init.test-dummies :refer :all]
-            [cdc-init.test-generators :refer :all]
+            [cdc-util.test-generators :refer :all]
             [cdc-init.protocols :refer :all]
             [cdc-init.core :refer :all]))
 

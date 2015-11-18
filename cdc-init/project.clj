@@ -28,6 +28,8 @@
                  [clj-kafka "0.3.2"]
                  [org.clojars.ah45/clj-kafka-util "0.1.1"]]
 
+  :source-paths ["src" "../cdc-util/src"]
+
   :main cdc-init.main
   :aot [cdc-init.main]
 
@@ -36,7 +38,8 @@
   :profiles {:repl {:source-paths ["dev"]}
              :dev {:dependencies [[reloaded.repl "0.2.1"]
                                   [org.clojure/test.check "0.8.2"]
-                                  [com.gfredericks/test.chuck "0.2.0"]]}}
+                                  [com.gfredericks/test.chuck "0.2.0"]]}
+             :test {:source-paths ["../cdc-util/test"]}}
 
   :repl-options {:init-ns user :init (reloaded.repl/init)}
 

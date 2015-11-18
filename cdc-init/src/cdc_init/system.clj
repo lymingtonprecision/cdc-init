@@ -3,11 +3,11 @@
             [environ.core :refer [env]]
 
             [cdc-init.components.change-data-store :refer [new-change-data-store]]
-            [cdc-init.components.database :refer [new-database]]
             [cdc-init.components.initializer :refer [new-initializer]]
-            [cdc-init.components.kafka :refer [new-kafka]]
             [cdc-init.components.seed-store :refer [new-seed-store]]
-            [cdc-init.components.topic-store :refer [new-topic-store]]))
+            [cdc-init.components.topic-store :refer [new-topic-store]]
+            [cdc-util.components.database :refer [new-database]]
+            [cdc-util.components.kafka :refer [new-kafka]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Constants
