@@ -12,6 +12,7 @@
 
                  ;; database
                  [hikari-cp "1.3.1"]
+                 [org.clojars.zentrope/ojdbc "11.2.0.3.0"]
 
                  ;; (de-)serialization
                  [cheshire "5.5.0"]

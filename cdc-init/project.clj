@@ -17,8 +17,6 @@
 
                  ;; database
                  [org.clojure/java.jdbc "0.4.2"]
-                 [org.clojars.zentrope/ojdbc "11.2.0.3.0"]
-                 [hikari-cp "1.3.1"]
                  [yesql "0.5.1"]
 
                  ;; (de-)serialization
