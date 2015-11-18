@@ -23,7 +23,7 @@
   ([env]
    (component/system-map
     :database (new-database-from-env env)
-    :kafka (new-kafka (:zookeeper env))
+    :kafka (new-kafka (:zookeeper env) "cdc-init")
     :change-data-store (new-change-data-store)
     :seed-store (new-seed-store)
     :topic-store (new-topic-store)

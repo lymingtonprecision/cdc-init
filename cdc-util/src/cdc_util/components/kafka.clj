@@ -6,15 +6,9 @@
             [cdc-util.env :refer [env->config]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Constants
-
-(def consumer-group
-  "cdc-init")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Component
 
-(defrecord Kafka [zookeeper]
+(defrecord Kafka [zookeeper consumer-group]
   component/Lifecycle
   (start [this]
     (let [zk-connect {"zookeeper.connect" zookeeper}
@@ -37,6 +31,7 @@
 
 (defn new-kafka
   "Returns a new, un-started, Kafka component that will connect to
-  ZooKeeper using the provided connection string."
-  [zookeeper]
-  (component/using (->Kafka zookeeper) []))
+  ZooKeeper using the provided connection string and act as a member
+  of the specified consumer group."
+  [zookeeper consumer-group]
+  (component/using (->Kafka zookeeper consumer-group) []))
