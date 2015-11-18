@@ -1,26 +1,34 @@
-(ns cdc-util.env
-  "Various utility fns related to component creation/use.")
+(ns cdc-util.env)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public
 
-(defn extract-options-from-env
-  "Given a map of environment variables and another of `env-var ->
-  option-name` mappings returns a map of the environment variable
-  values mapped to their corresponding option names.
+(defn env->config
+  "Given a map of environment variables and collection of keys or
+  tuples of `[:env-key :config-key]` returns a map of selected
+  configuration values:
 
-      (extract-options-from-env
-       {:db-host \"db.example.com\"
+      (env->config
+       {:db-name \"app-db\"
+        :db-host \"db.example.com\"
         :db-user \"admin\"
-        :home \"/users/example\"}
-       {:db-host :hostname
-        :db-user :username})
-      ;=> {:hostname \"db.example.com\" :username \"admin\"}"
-  [env env-key->option-map]
+        :password \"my-secret\"
+        :home \"/users/example\"
+        ;; ... other env vars
+        }
+       [[:db-name :database]
+        [:db-host :server]
+        [:db-user :username]
+        :password])
+      ;=> {:database \"app-db\"
+      ;;   :server   \"db.example.com\"
+      ;;   :username \"admin\"
+      ;;   :password \"my-secret\"}"
+  [env config-keys]
   (reduce
-   (fn [opts [k v]]
-     (if-let [k (env-key->option-map k)]
-       (assoc opts k v)
-       opts))
+   (fn [rs k]
+     (if (coll? k)
+       (assoc rs (second k) (get env (first k)))
+       (assoc rs k (get env k))))
    {}
-   env))
+   config-keys))

@@ -5,7 +5,7 @@
   min/max pool size of 2/20 connections."
   (:require [com.stuartsierra.component :as component]
             [hikari-cp.core :as hk]
-            [cdc-init.components.util :refer [extract-options-from-env]]))
+            [cdc-util.env :refer [env->config]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Defaults
@@ -25,10 +25,10 @@
 ;; ENV key mappings
 
 (def env-keys->option-names
-  {:db-name :database-name
-   :db-server :server-name
-   :db-user :username
-   :db-password :password})
+  [[:db-name :database-name]
+   [:db-server :server-name]
+   [:db-user :username]
+   [:db-password :password]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Component
@@ -37,7 +37,7 @@
   component/Lifecycle
   (start [this]
     (let [o (merge default-options
-                   (extract-options-from-env env env-keys->option-names))
+                   (env->config env env-keys->option-names))
           ds (hk/make-datasource o)]
       (assoc this :options o :datasource ds)))
   (stop [this]

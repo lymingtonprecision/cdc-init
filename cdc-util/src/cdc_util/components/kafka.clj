@@ -3,7 +3,7 @@
   (:require [com.stuartsierra.component :as component]
             [clj-kafka.zk :as zk]
             [clj-kafka.new.producer :as kafka]
-            [cdc-init.components.util :refer [extract-options-from-env]]))
+            [cdc-util.env :refer [env->config]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Constants
@@ -15,7 +15,7 @@
 ;; ENV var mappings
 
 (def env-keys->option-names
-  {:zookeeper "zookeeper.connect"})
+  [[:zookeeper "zookeeper.connect"]])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Component
@@ -23,7 +23,7 @@
 (defrecord Kafka [env]
   component/Lifecycle
   (start [this]
-    (let [options (extract-options-from-env env env-keys->option-names)
+    (let [options (env->config env env-keys->option-names)
           brokers (-> options zk/brokers zk/broker-list)
           config (merge options {"bootstrap.servers" brokers
                                  "group.id" consumer-group
