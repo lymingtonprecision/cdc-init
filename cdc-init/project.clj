@@ -36,10 +36,10 @@
   :uberjar-name "cdc-init-standalone.jar"
 
   :profiles {:repl {:source-paths ["dev"]}
-             :dev {:dependencies [[reloaded.repl "0.2.1"]
+             :dev {:source-paths ["../cdc-util/test"]
+                   :dependencies [[reloaded.repl "0.2.1"]
                                   [org.clojure/test.check "0.8.2"]
-                                  [com.gfredericks/test.chuck "0.2.0"]]}
-             :test {:source-paths ["../cdc-util/test"]}}
+                                  [com.gfredericks/test.chuck "0.2.0"]]}}
 
   :repl-options {:init-ns user :init (reloaded.repl/init)}
 
