@@ -1,6 +1,6 @@
 (defproject lymingtonprecision/cdc-util "1.0.1-SNAPSHOT"
   :description "LPE Change Data Capture utility library"
-  :url "https://github.com/lymingtonprecision/cdc-util"
+  :url "https://github.com/lymingtonprecision/change-data-capture/cdc-util"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.7.0"]
@@ -29,4 +29,4 @@
 
   :codox {:metadata {:doc/format :markdown}
           :output-path "./"
-          :source-uri "https://github.com/lymingtonprecision/cdc-util/blob/master/{filepath}#L{line}"})
+          :source-uri "https://github.com/lymingtonprecision/change-data-capture/blob/master/cdc-util/{filepath}#L{line}"})
