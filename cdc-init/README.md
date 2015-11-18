@@ -6,67 +6,8 @@ posting progress updates to an Apache Kafka topic.
 
 ## Overview
 
-### Change Data Capture
-
-Is the process of recording all insert, update, and delete events
-within a RDBMS, in our case that is the Oracle based IFS database.
-
-The _purpose_ of such a system is to enable stream processing of data
-modification events. Some use cases are:
-
-* Keep a detailed history/record changes for auditing/logging.
-* Provide a central point from which to subscribe to events arising
-  from changing data.
-* Perform real time processing of business data.
-
-Capturing these events turns them into a universal pipeline of data—a
-global commit log—which can be consumed and processed in an unlimited
-number of ways. See the references at the end of this document for
-further reading on the subject.
-
-This service uses [Apache Kafka][kafka] as the backend/datastore for
-this event data as it is extremely efficient and eminently well suited
-to the task. Note, however, that we only deal with setting up the
-change capture environment here for ongoing publication of change data
-events the [`cdc-publisher`][cdc-pub] service is required.
-
-[kafka]: http://kafka.apache.org/
-[cdc-pub]: https://github.com/lymingtonprecision/cdc-publisher
-
-### Control/Monitoring Progress
-
-Requests to enable Change Data Capture must be posted to the Apache
-Kafka control topic as JSON in the following format:
-
-```json
-{
-  "table": "ifsapp.shop_ord_tab",
-  "trigger": "ifsapp.lpe_cdc_shop_ord",
-  "queue": "changedata.lpe_cdc_shop_ord",
-  "queue-table": "changedata.shop_ord",
-  "status": "submitted",
-  "timestamp": "20151113T132903.564Z"
-}
-```
-
-The message body should be a JSON encoded string whereas the key
-should be the value of the `"table"` field.
-
-Each of the `"table"`, `"trigger"`, `"queue"`, and `"queue-table"`
-entries must specify the schema qualified name of the corresponding
-object to use/create. `"status"` **must** be `"submitted"` and
-`"timestamp"` is the ISO8601 encoded time of submission.
-
-Note that `"table"` and `"trigger"` will be in the IFS application
-owner schema whereas `"queue"` and `"queue-table"` should be in the
-default schema of the user under which the service is running.
-
-`"trigger"` names (excluding the schema) must be 30 characters or
-shorter. `"queue"` and `"queue-table"` names must be 24 characters or
-shorter.
-
-This service will _only_ act upon messages that have a `"status"` of
-`submitted`. The process it follows is:
+This service will _only_ act upon messages posted to the control topic
+that have a `"status"` of `submitted`. The process it follows is:
 
 * Create the queue (and queue table if required) to record the Change
   Data Capture messages to in the database.
@@ -173,20 +114,6 @@ Nothing special, you just need to ensure you've built the uberjar first:
 
     lein unberjar
     docker build -t lpe/cdc-init:latest .
-
-## References
-
-Pretty much anything [Martin Kleppmann][mkleppmann] has written or
-[Confluent] have posted to their blog. The following articles were
-particularly inspiring:
-
-* [Turning the Database Inside Out](http://www.confluent.io/blog/turning-the-database-inside-out-with-apache-samza/)
-* [Putting Apache Kafka To Use](http://www.confluent.io/blog/stream-data-platform-1/)
-* [Using Logs to Build a Solid Data Infrastructure](http://www.confluent.io/blog/using-logs-to-build-a-solid-data-infrastructure-or-why-dual-writes-are-a-bad-idea/)
-* [Bottled Water: Real-Time Integration of PostgreSQL and Kafka](http://martin.kleppmann.com/2015/04/23/bottled-water-real-time-postgresql-kafka.html)
-
-[mkleppmann]: http://martin.kleppmann.com/
-[Confluent]: http://www.confluent.io/
 
 ## License
 
