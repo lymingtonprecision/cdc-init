@@ -1,4 +1,4 @@
-(ns cdc-init.components.util
+(ns cdc-util.env
   "Various utility fns related to component creation/use.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

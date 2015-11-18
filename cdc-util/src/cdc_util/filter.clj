@@ -1,5 +1,5 @@
-(ns cdc-init.filter
-  (:require [cdc-init.format :refer [msg->ccd]])
+(ns cdc-util.filter
+  (:require [cdc-util.format :refer [msg->ccd]])
   (:import [kafka.message MessageAndMetadata]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

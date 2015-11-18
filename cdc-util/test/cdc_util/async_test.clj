@@ -1,7 +1,7 @@
-(ns cdc-init.async.util-test
+(ns cdc-util.async-test
   (:require [clojure.test :refer :all]
             [clojure.core.async :as async]
-            [cdc-init.async.util :refer :all]))
+            [cdc-util.async :refer :all]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; utility fns

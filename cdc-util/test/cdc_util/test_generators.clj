@@ -1,11 +1,11 @@
-(ns cdc-init.test-generators
+(ns cdc-util.test-generators
   (:require [clojure.test.check.generators :as gen]
             [clojure.string :as string]
             [cheshire.core :as cheshire]
             [clj-kafka.consumer.zk :as kafka.consumer]
             [clj-kafka.consumer.util :as k.c.util]
             [clj-time.core :as time]
-            [cdc-init.format :as format])
+            [cdc-util.format :as format])
   (:import [kafka.message Message MessageAndMetadata]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

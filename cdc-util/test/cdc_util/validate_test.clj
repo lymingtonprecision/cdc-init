@@ -1,4 +1,4 @@
-(ns cdc-init.util-test
+(ns cdc-util.validate-test
   (:require [clojure.test :refer :all]
             [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test.check.generators :as gen]
@@ -8,8 +8,8 @@
             [clojure.core.async :as async]
             [clojure.string :as string]
 
-            [cdc-init.test-generators :refer :all]
-            [cdc-init.util :refer :all])
+            [cdc-util.test-generators :refer :all]
+            [cdc-util.validate :refer :all])
   (:import [java.sql Time Timestamp]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

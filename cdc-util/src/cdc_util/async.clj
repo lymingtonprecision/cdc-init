@@ -1,4 +1,4 @@
-(ns cdc-init.async.util
+(ns cdc-util.async
   (:require [clojure.core.async :as async]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

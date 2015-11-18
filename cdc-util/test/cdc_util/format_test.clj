@@ -1,4 +1,4 @@
-(ns cdc-init.format-test
+(ns cdc-util.format-test
   (:require [clojure.test :refer :all]
             [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test.check.generators :as gen]
@@ -9,8 +9,8 @@
             [clj-kafka.consumer.zk :as kafka.consumer]
             [clj-time.format :as time.format]
 
-            [cdc-init.test-generators :refer :all]
-            [cdc-init.format :refer :all])
+            [cdc-util.test-generators :refer :all]
+            [cdc-util.format :refer :all])
   (:import [kafka.message Message MessageAndMetadata]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

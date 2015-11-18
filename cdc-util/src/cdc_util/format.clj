@@ -1,4 +1,4 @@
-(ns cdc-init.format
+(ns cdc-util.format
   (:require [cheshire.core :as cheshire]
             [cheshire.generate :as cheshire.gen]
             [clj-time.format :as time.format]))
