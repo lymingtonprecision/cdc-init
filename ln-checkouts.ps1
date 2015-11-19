@@ -65,3 +65,15 @@ If (-NOT (Test-Path ([io.path]::Combine($cdcInit, 'checkouts')))) {
   $cdcUtil,
   1
 )
+
+$cdcPub = (Resolve-Path (Join-Path $rootDir .\cdc-publisher)).path
+
+If (-NOT (Test-Path ([io.path]::Combine($cdcPub, 'checkouts')))) {
+  New-Item -Path $cdcPub -Name "checkouts" -ItemType "directory"
+}
+
+[mklink.symlink]::CreateSymbolicLink(
+  [io.path]::Combine($cdcPub, 'checkouts\cdc-util'),
+  $cdcUtil,
+  1
+)
