@@ -5,63 +5,17 @@
             [clojure.tools.logging :as log]
             [com.stuartsierra.component :as component]
 
-            [clj-kafka.admin :as kafka.admin]
-            [clj-kafka.new.producer :as kafka]
-            [clj-kafka.zk :as kafka.zk]
-            [clj-kafka.consumer.util :as k.c.util]
-
-            [cdc-util.async
-             :refer [pipe-ret-last
-                     go-till-closed
-                     noop-transducer]]
+            [cdc-util.async :refer [pipe-ret-last go-till-closed noop-transducer]]
             [cdc-util.filter :as filter]
-            [cdc-util.format :as format]
-            [cdc-util.validate :refer [validate-ccd]]
+            [cdc-util.kafka :refer :all]
 
-            [cdc-init.core :refer :all]
-            [cdc-init.protocols :refer :all]))
+            [cdc-init.core :refer :all]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Constants
 
 (def non-initializable-statuses
   #{:active :error})
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Kafka/control topic interaction
-
-(defn control-topic-exists?
-  "Returns truthy if the required control topic exists within the
-  given Kafka configuration."
-  [{zkc "zookeeper.connect" :as kafka-config} topic]
-  (with-open [zk (kafka.admin/zk-client zkc)]
-    (kafka.admin/topic-exists? zk topic)))
-
-(defn create-control-topic!
-  "Creates the specified control topic within the given Kafka
-  configuration."
-  [{zkc "zookeeper.connect" :as kafka-config} topic]
-  (let [brokers (-> kafka-config kafka.zk/brokers)
-        replicas (min 3 (count brokers))]
-    (log/info "creating control topic" topic)
-    (with-open [zk (kafka.admin/zk-client zkc)]
-      (kafka.admin/create-topic
-       zk topic
-       {:partitions 1
-        :replication-factor replicas
-        :config {"cleanup.policy" "compact"}}))))
-
-(defn reset-offset!
-  "Resets the consumer offset on the specified topic of the given
-  Kafka consumer group."
-  [{zkc "zookeeper.connect" group-id "group.id" :as kafka-config} topic offset]
-  (let [get-offset #(kafka.zk/committed-offset kafka-config group-id topic 0)]
-    ;; set
-    (kafka.zk/set-offset! kafka-config group-id topic 0 offset)
-    ;; verify
-    (loop [o (get-offset)]
-      (when-not (= offset o)
-        (recur (get-offset))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Utility fns
@@ -74,28 +28,9 @@
   Resets the consumer offset for the topic to the maximum offset
   read."
   [kafka-config topic]
-  (reset-offset! kafka-config topic 0)
-  (let [[ccds max-offset] (filter/topic->ccds-and-max-offset
-                           (k.c.util/topic->reduceable
-                            topic
-                            (assoc kafka-config "consumer.timeout.ms" "5000")
-                            (k.c.util/string-decoder)
-                            (format/ccd-decoder)))]
-    (log/debug "control topic offset set to" (inc max-offset))
-    (reset-offset! kafka-config topic (inc max-offset))
-    (remove #(contains? non-initializable-statuses (:status %)) ccds)))
-
-(defn send-ccd
-  "Sends the given Change Capture Definition record to the specified
-  topic via the provided Kafka producer.
-
-  Returns the future encapsulating the send op."
-  [kafka-producer topic ccd]
-  (if-let [json (some-> ccd validate-ccd format/ccd->json-str)]
-    (do
-      (log/debug "send-ccd" (select-keys ccd [:table :status :error :progress]))
-      (kafka/send kafka-producer (kafka/record topic (:table ccd) json)))
-    (log/error "send-ccd failed: invalid CCD record" ccd)))
+  (remove
+   #(contains? non-initializable-statuses (:status %))
+   (topic->last-known-ccd-states kafka-config topic)))
 
 (defn updates-chan
   "Returns a channel that will post any received Change Capture
@@ -103,17 +38,6 @@
   producer."
   [kafka-producer topic]
   (async/chan 1 (noop-transducer (partial send-ccd kafka-producer topic))))
-
-(defn submissions-onto-chan
-  "Returns a `java.io.Closeable` loop that posts any Change Capture
-  Definitions submitted to the specified topic onto the given channel."
-  [ch topic kafka-config]
-  (k.c.util/topic-onto-chan
-   ch
-   topic
-   kafka-config
-   (k.c.util/string-decoder)
-   (format/ccd-decoder)))
 
 (defn initialize-ccd-loop
   "Returns a `java.io.Closeable` loop that takes Change Capture
@@ -149,7 +73,7 @@
       this
       (do
         (log/info "starting initializer")
-        (when-not (control-topic-exists? (:config kafka) control-topic)
+        (when-not (topic-exists? (:config kafka) control-topic)
           (create-control-topic! (:config kafka) control-topic))
         (let [ccds (ccds-to-initialize (:config kafka) control-topic)
               _ (log/info "found" (count ccds) "CCDs waiting initializtion")
@@ -166,7 +90,7 @@
               ;; synchronously post progress updates back to kafka
               updates (updates-chan (:producer kafka) control-topic)]
           ;; setup complete, create our "worker" loops and return
-          (let [submission-loop (submissions-onto-chan
+          (let [submission-loop (ccd-topic-onto-chan
                                  submissions
                                  control-topic
                                  (:config kafka))
