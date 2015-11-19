@@ -26,20 +26,19 @@
      (is (= exp (transduce (msgs->ccds-with-status status) conj [] msgs))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; topic->ccds-to-initialize
+;; topic->ccds-and-max-offset
 
-(defspec ccds-to-init-returns-ccds-and-max-offset
+(defspec ccds-and-max-offset
   (chuck/for-all
    [topic gen/string-ascii
     ccds (gen/vector (gen/tuple gen/nat gen-change-capture-def))]
    (let [msgs (map (fn [[offset ccd]] (ccd->msg ccd topic offset)) ccds)
-         exp [(remove #(contains? #{:active :error} (:status %))
-                      (vals
-                       (reduce
-                        (fn [rs ccd] (assoc rs (:table ccd) ccd))
-                        {}
-                        (map second ccds))))
+         exp [(vals
+               (reduce
+                (fn [rs ccd] (assoc rs (:table ccd) ccd))
+                {}
+                (map second ccds)))
               (if (empty? ccds)
                 -1
                 (apply max (map first ccds)))]]
-     (is (= exp (topic->ccds-to-initialize msgs))))))
+     (is (= exp (topic->ccds-and-max-offset msgs))))))

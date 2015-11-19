@@ -22,6 +22,12 @@
             [cdc-init.protocols :refer :all]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Constants
+
+(def non-initializable-statuses
+  #{:active :error})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Kafka/control topic interaction
 
 (defn control-topic-exists?
@@ -69,7 +75,7 @@
   read."
   [kafka-config topic]
   (reset-offset! kafka-config topic 0)
-  (let [[ccds max-offset] (filter/topic->ccds-to-initialize
+  (let [[ccds max-offset] (filter/topic->ccds-and-max-offset
                            (k.c.util/topic->reduceable
                             topic
                             (assoc kafka-config "consumer.timeout.ms" "5000")
@@ -77,7 +83,7 @@
                             (format/ccd-decoder)))]
     (log/debug "control topic offset set to" (inc max-offset))
     (reset-offset! kafka-config topic (inc max-offset))
-    ccds))
+    (remove #(contains? non-initializable-statuses (:status %)) ccds)))
 
 (defn send-ccd
   "Sends the given Change Capture Definition record to the specified
