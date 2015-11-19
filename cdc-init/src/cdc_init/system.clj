@@ -7,13 +7,8 @@
             [cdc-init.components.seed-store :refer [new-seed-store]]
             [cdc-init.components.topic-store :refer [new-topic-store]]
             [cdc-util.components.database :refer [new-database-from-env]]
-            [cdc-util.components.kafka :refer [new-kafka]]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Constants
-
-(def default-control-topic
-  "change-data-capture")
+            [cdc-util.components.kafka :refer [new-kafka]]
+            [cdc-util.kafka :refer [default-control-topic]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public

@@ -28,6 +28,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public
 
+(def default-control-topic
+  "change-data-capture")
+
 (defn topic-exists?
   "Returns truthy if the specified topic exists within the given Kafka
   configuration."
