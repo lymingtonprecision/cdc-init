@@ -10,6 +10,9 @@
                  [com.stuartsierra/component "0.3.0"]
                  [clj-time "0.11.0"]
 
+                 ;; logging
+                 [org.clojure/tools.logging "0.3.1"]
+
                  ;; database
                  [hikari-cp "1.3.1"]
                  [org.clojars.zentrope/ojdbc "11.2.0.3.0"]
