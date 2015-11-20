@@ -1,4 +1,4 @@
-(defproject cdc-publisher "0.1.0"
+(defproject cdc-publisher "0.2.0-SNAPSHOT"
   :description "LPE Change Data Capture publication service"
   :url "https://github.com/lymingtonprecision/change-data-capture/cdc-publisher"
   :license {:name "Eclipse Public License"
