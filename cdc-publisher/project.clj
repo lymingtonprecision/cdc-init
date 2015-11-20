@@ -1,4 +1,4 @@
-(defproject cdc-publisher "0.1.0-SNAPSHOT"
+(defproject cdc-publisher "0.1.0"
   :description "LPE Change Data Capture publication service"
   :url "https://github.com/lymingtonprecision/change-data-capture/cdc-publisher"
   :license {:name "Eclipse Public License"
@@ -27,7 +27,7 @@
                  [org.clojars.ah45/clj-kafka-util "0.1.1"]
 
                  ;; utils
-                 [lymingtonprecision/cdc-util "1.0.3-SNAPSHOT"]]
+                 [lymingtonprecision/cdc-util "1.0.3"]]
 
   :main cdc-publisher.main
   :aot [cdc-publisher.main]
