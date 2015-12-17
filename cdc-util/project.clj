@@ -4,29 +4,29 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [org.clojure/core.async "0.2.371"]
+                 [org.clojure/core.async "0.2.374"]
 
                  ;; system
-                 [com.stuartsierra/component "0.3.0"]
+                 [com.stuartsierra/component "0.3.1"]
                  [clj-time "0.11.0"]
 
                  ;; logging
                  [org.clojure/tools.logging "0.3.1"]
 
                  ;; database
-                 [hikari-cp "1.3.1"]
+                 [hikari-cp "1.5.0"]
                  [org.clojars.zentrope/ojdbc "11.2.0.3.0"]
 
                  ;; (de-)serialization
                  [cheshire "5.5.0"]
 
                  ;; kafka
-                 [clj-kafka "0.3.2"]
-                 [org.clojars.ah45/clj-kafka-util "0.1.0"]]
+                 [clj-kafka "0.3.4"]
+                 [org.clojars.ah45/clj-kafka-util "0.1.1"]]
 
   :profiles {:repl {:source-paths ["dev"]}
-             :dev {:dependencies [[org.clojure/test.check "0.8.2"]
-                                  [com.gfredericks/test.chuck "0.2.0"]]}}
+             :dev {:dependencies [[org.clojure/test.check "0.9.0"]
+                                  [com.gfredericks/test.chuck "0.2.4"]]}}
 
   :plugins [[lein-codox "0.9.0"]]
 
