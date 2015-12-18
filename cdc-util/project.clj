@@ -10,6 +10,9 @@
                  [com.stuartsierra/component "0.3.1"]
                  [clj-time "0.11.0"]
 
+                 ;; schema
+                 [prismatic/schema "1.0.4"]
+
                  ;; logging
                  [org.clojure/tools.logging "0.3.1"]
 

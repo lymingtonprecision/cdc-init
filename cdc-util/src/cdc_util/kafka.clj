@@ -42,7 +42,7 @@
   "Creates the specified control topic within the given Kafka
   configuration."
   [{zkc "zookeeper.connect" :as kafka-config} topic]
-  (let [brokers (-> kafka-config kafka.zk/brokers)
+  (let [brokers (kafka.zk/brokers kafka-config)
         replicas (min 3 (count brokers))]
     (log/info "creating control topic" topic)
     (with-open [zk (kafka.admin/zk-client zkc)]

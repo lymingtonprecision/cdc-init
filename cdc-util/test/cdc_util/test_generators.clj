@@ -5,7 +5,8 @@
             [clj-kafka.consumer.zk :as kafka.consumer]
             [clj-kafka.consumer.util :as k.c.util]
             [clj-time.core :as time]
-            [cdc-util.format :as format])
+            [cdc-util.format :as format]
+            [cdc-util.schema.oracle-refs-test :as oracle-refs])
   (:import [kafka.message Message MessageAndMetadata]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -16,15 +17,9 @@
    [:submitted
     :prepared
     :active
-    :error
     :queue-created
     :topic-created
     :trigger-created]))
-
-(def gen-non-empty-string
-  (gen/such-that
-   #(not (string/blank? %))
-   (gen/not-empty gen/string-ascii)))
 
 (def gen-rand-time
   (gen/fmap
@@ -40,12 +35,12 @@
 
 (def gen-change-capture-def
   (gen/hash-map
-   :table gen-non-empty-string
+   :table oracle-refs/gen-schema-ref
    :status gen-rand-ccd-status
    :timestamp gen-rand-time
-   :trigger gen-non-empty-string
-   :queue gen-non-empty-string
-   :queue-table gen-non-empty-string))
+   :trigger oracle-refs/gen-schema-ref
+   :queue oracle-refs/gen-queue-ref
+   :queue-table oracle-refs/gen-queue-ref))
 
 (defn new-change-capture-def []
   (first (gen/sample gen-change-capture-def 1)))
