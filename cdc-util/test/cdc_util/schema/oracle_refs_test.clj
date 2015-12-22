@@ -35,7 +35,7 @@
 
 (def gen-invalid-ref
   (gen/one-of
-   [(chuck.gen/string-from-regex #"\"[\\s\" ]*\"[a-z0-9]*")
+   [(chuck.gen/string-from-regex #"\"[\\s\" ]*\"[a-z0-9]+")
     (chuck.gen/string-from-regex #"[0-9_$#][a-z0-9_$#]*")
     (chuck.gen/string-from-regex #"[a-z][^a-z0-9_$#]+.*")]))
 
@@ -116,7 +116,7 @@
    [v gen-invalid-ref]
    (is (schema/check table-alias v))))
 
-(deftest table-alias-refs-must-be-24-chars-or-less
+(deftest table-alias-refs-must-be-22-chars-or-less
   (is (schema/check table-alias (str \" (string/join (repeat 23 "a")) \")))
   (is (schema/check table-alias (string/join (repeat 23 "a"))))
   (is (nil? (schema/check table-alias (string/join (repeat 22 "a"))))))

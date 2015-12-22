@@ -72,7 +72,7 @@
    (reset-dummies!)
    (case e
      :queue (create-queue! *dummy-database* (:queue ccd) (:queue-table ccd))
-     :trigger (create-trigger! *dummy-database* (:table ccd) (:queue ccd) (:trigger ccd))
+     :trigger (create-trigger! *dummy-database* (:table ccd) (:queue ccd) (:table-alias ccd))
      :topic (create-topic! *dummy-kafka* (:queue ccd)))
    (let [exp (sort (remove #(.startsWith (str %) (str e)) ccd-preparation-states))
          states (<!!all (prepare ccd *dummy-database* *dummy-kafka*))]
@@ -106,7 +106,7 @@
   (let [ccd (<!!last
              (prepare-after
               (fn [ccd]
-                (create-trigger! *dummy-database* (:table ccd) (:queue ccd) (:trigger ccd))
+                (create-trigger! *dummy-database* (:table ccd) (:queue ccd) (:table-alias ccd))
                 (enable-trigger! *dummy-database* (:table ccd)))))]
     (is (= :prepared (:status ccd)))
     (is (trigger-exists? *dummy-database* (:table ccd)))

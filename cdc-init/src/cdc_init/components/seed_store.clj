@@ -23,11 +23,12 @@
 (defquery drop-seed-view! "cdc_init/sql/seeds/drop_seed_view.sql")
 
 (defn create-seed-view!
-  [{:keys [schema table]} {:keys [connection]}]
+  [{:keys [schema table alias]} {:keys [connection]}]
   (let [stmt (doto (.prepareCall connection -create-seed-view!)
                (.registerOutParameter 1 java.sql.Types/VARCHAR)
                (.setString 2 schema)
                (.setString 3 table)
+               (.setString 4 alias)
                (.execute))]
     (.getString stmt 1)))
 
@@ -67,7 +68,11 @@
                  {:connection database
                   :result-set-fn (fn [rs] (-> rs first :n int))}))
   (to-chan [this table]
-    (let [table-ref (split-table-ref table)
+    (.to-chan this table nil))
+  (to-chan [this table table-alias]
+    (let [table-ref (assoc
+                     (split-table-ref table)
+                     :alias table-alias)
           ch (async/chan)]
       (async/go
         (try

@@ -57,9 +57,9 @@
     (get @triggers table))
   (create-trigger! [this table queue]
     (create-trigger! this table queue nil))
-  (create-trigger! [this table queue trigger]
+  (create-trigger! [this table queue table-alias]
     (when-not (trigger-exists? this table)
-      (error-on?! this :create-trigger table trigger @triggers)
+      (error-on?! this :create-trigger table @triggers)
       (swap! triggers assoc table false)))
   (enable-trigger! [this table]
     (when (trigger-exists? this table)
@@ -76,7 +76,7 @@
   events, with the specified error fn signatures:
 
   * `:create-queue`, `(fn [queue-name existing-queues])`
-  * `:create-trigger`, `(fn [table-name trigger-name existing-triggers])`"
+  * `:create-trigger`, `(fn [table-name existing-triggers])`"
   []
   (map->DummyDatabase {:queues (atom {}) :triggers (atom {}) :errors (atom {})}))
 
@@ -89,6 +89,8 @@
   SeedStore
   (record-count [this table] (count (get @seeds table)))
   (to-chan [this table]
+    (.to-chan this table nil))
+  (to-chan [this table table-alias]
     (error-on?! this :to-chan table @seeds)
     (async/to-chan (get @seeds table))))
 

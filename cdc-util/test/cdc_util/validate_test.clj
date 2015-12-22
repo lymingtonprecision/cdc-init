@@ -8,9 +8,41 @@
             [clojure.core.async :as async]
             [clojure.string :as string]
 
+            [cdc-util.schema.oracle-refs-test :as oracle-refs]
             [cdc-util.test-generators :refer :all]
             [cdc-util.validate :refer :all])
   (:import [java.sql Time Timestamp]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; requires-table-alias?
+
+(deftest requires-table-alias-handles-nil
+  (is (not (requires-table-alias? nil))))
+
+(deftest table-alias-boundaries
+  (let [max-valid (str "a." (string/join (repeat 22 "a")))]
+    (is (not (requires-table-alias? {:table max-valid})))
+    (is (requires-table-alias? {:table (str max-valid "a")}))))
+
+(defspec invalid-refs-dont-need-table-aliases
+  (chuck/for-all
+   [ref oracle-refs/gen-invalid-schema-ref]
+   (is (not (requires-table-alias? {:table ref})))))
+
+(defspec valid-refs-need-table-aliases-when-over-22-chars
+  (chuck/for-all
+   [schema (oracle-refs/gen-ref)
+    table (oracle-refs/gen-ref)]
+   (let [ref (str schema "." table)
+         raw-table (last (re-matches #"^\"?([^\"]+)\"?$" table))]
+     (if (> (count raw-table) 22)
+       (is (requires-table-alias? {:table ref}))
+       (is (not (requires-table-alias? {:table ref})))))))
+
+(deftest providing-an-alias-satisfies-requirement
+  (let [ccd {:table "a.a0123456789012345678901"}]
+    (is (requires-table-alias? ccd))
+    (is (not (requires-table-alias? (assoc ccd :table-alias "a01"))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; validate-ccd
@@ -26,7 +58,7 @@
           (assoc ccd f v))])
      (gen/tuple
       gen-change-capture-def
-      (gen/elements [:table :queue :queue-table :trigger])
+      (gen/elements [:table :queue :queue-table])
       (gen/one-of
        [(gen/elements [nil :absent])
         (gen/such-that #(or (not (instance? String %)) (string/blank? %))
@@ -54,3 +86,14 @@
         (gen/return (java.sql.Timestamp. (.getTime (java.util.Date.))))])))]
    (is (= valid-ccd (validate-ccd valid-ccd)))
    (is (nil? (validate-ccd invalid-ccd)))))
+
+(defspec ccds-with-table-names-over-22-chars-need-aliases
+  (chuck/for-all
+   [ccd gen-change-capture-def]
+   (if (> (count (table-name ccd)) 22)
+     (do
+       (is (= ccd (validate-ccd ccd)))
+       (is (nil? (validate-ccd (dissoc ccd :table-alias)))))
+     (do
+       (is (= ccd (validate-ccd ccd)))
+       (is (validate-ccd (dissoc ccd :table-alias)))))))

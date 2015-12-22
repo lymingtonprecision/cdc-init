@@ -9,7 +9,7 @@
   (clear-queue! [this queue table])
   (trigger-exists? [this table])
   (trigger-enabled? [this table])
-  (create-trigger! [this table queue] [this table queue trigger])
+  (create-trigger! [this table queue] [this table queue table-alias])
   (enable-trigger! [this table])
   (disable-trigger! [this table]))
 
@@ -23,6 +23,6 @@
 
 (defprotocol SeedStore
   (record-count [this table])
-  (to-chan [this table]
+  (to-chan [this table] [this table table-alias]
     "Returns a channel onto which each seed record will be put until
     no records remain (and the channel is closed.)"))

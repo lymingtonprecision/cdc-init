@@ -4,7 +4,7 @@ begin
     :table,
     :queue,
     null,
-    :trigger,
+    :alias,
     false
   );
 end;

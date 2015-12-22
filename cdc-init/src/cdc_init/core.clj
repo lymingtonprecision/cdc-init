@@ -46,8 +46,12 @@
   * `:queue-table`
     The name of the queue table used as the backing store for the
     queue.
-  * `:trigger`
-    The name of the change data capture trigger.
+
+  If the specified `:table` name is longer than 22 characters then a
+  `:table-alias` must also be specified to use in place of the table
+  name when creating the associated objects (e.g. if your table is
+  \"myschema.technical_object_reference_tab\" then an alias will be
+  required and a suitable one might be \"tech_obj_ref\".)
 
   Any non-existing entities will be created and any that exist will be
   cleared of existing data.
@@ -71,7 +75,7 @@
   exception stored under the `:error` key.
 
   The returned channel is closed when preparation has finished."
-  [{:keys [table queue queue-table trigger] :as ccd} db ts]
+  [{:keys [table queue queue-table table-alias] :as ccd} db ts]
   {:pre [(satisfies? ChangeDataStore db)
          (satisfies? TopicStore ts)]}
   (let [progress (async/chan 4)]
@@ -79,7 +83,7 @@
       (try
         (if (trigger-exists? db table)
           (disable-trigger! db table)
-          (do (create-trigger! db table queue trigger)
+          (do (create-trigger! db table queue table-alias)
               (>!status-update progress ccd :trigger-created)))
         (if (queue-exists? db queue)
           (clear-queue! db queue queue-table)
@@ -108,6 +112,12 @@
     The name of the queue/topic to which the change data will be
     recorded.
 
+  If the specified `:table` name is longer than 22 characters then a
+  `:table-alias` must also be specified to use in place of the table
+  name when creating the associated objects (e.g. if your table is
+  \"myschema.technical_object_reference_tab\" then an alias will be
+  required and a suitable one might be \"tech_obj_ref\".)
+
   `ts` **must** satisfy the `TopicStore` protocol and be able to
   record new messages on the topic specified by `:queue`.
 
@@ -121,7 +131,7 @@
   the topic store, otherwise it will be sent as a non-keyed value.
 
   `db` **must** satisfy the `ChangeDataStore` protocol and be capable
-  of enabling the trigger `:trigger`.
+  of enabling the trigger associated with the table.
 
   Returns a channel onto which the intermediate and final states of
   `ccd` during initialization are put. There is only one intermediate
@@ -141,7 +151,7 @@
   `:error` key.
 
   The returned channel is closed when initialization has finished."
-  [{:keys [table queue] :as ccd} ts ss db]
+  [{:keys [table queue table-alias] :as ccd} ts ss db]
   {:pre [(satisfies? TopicStore ts)
          (satisfies? SeedStore ss)
          (satisfies? ChangeDataStore db)]}
@@ -150,7 +160,7 @@
       (try
         (enable-trigger! db table)
         (let [total (record-count ss table)
-              seeds (to-chan ss table)
+              seeds (to-chan ss table table-alias)
               two-pcnt (* total 0.02)
               last-report (atom nil)]
           (when (pos? total)

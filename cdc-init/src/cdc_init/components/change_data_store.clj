@@ -55,11 +55,11 @@
 
   (create-trigger! [this table queue]
     (.create-trigger! database table queue nil))
-  (create-trigger! [this table queue trigger]
+  (create-trigger! [this table queue table-alias]
     (-create-trigger! (merge
                        (split-table-ref table)
                        {:queue queue
-                        :trigger trigger})
+                        :alias table-alias})
                       {:connection database}))
 
   (enable-trigger! [this table]

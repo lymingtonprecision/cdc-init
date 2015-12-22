@@ -36,9 +36,9 @@
 (def gen-change-capture-def
   (gen/hash-map
    :table oracle-refs/gen-schema-ref
+   :table-alias oracle-refs/gen-table-alias
    :status gen-rand-ccd-status
    :timestamp gen-rand-time
-   :trigger oracle-refs/gen-schema-ref
    :queue oracle-refs/gen-queue-ref
    :queue-table oracle-refs/gen-queue-ref))
 
