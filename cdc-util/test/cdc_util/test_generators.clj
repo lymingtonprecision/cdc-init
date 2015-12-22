@@ -64,8 +64,8 @@
 (defn ccd->msg [ccd topic offset]
   (MessageAndMetadata.
    topic 0
-   (Message. (.getBytes (cheshire/generate-string ccd))
-             (.getBytes (:table ccd)))
+   (Message. (.getBytes (cheshire/generate-string ccd) "UTF8")
+             (.getBytes (:table ccd) "UTF8"))
    offset
    (k.c.util/string-decoder) #_(kafka.consumer/default-decoder)
    (format/ccd-decoder) #_(kafka.consumer/default-decoder)))
