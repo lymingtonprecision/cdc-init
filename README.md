@@ -55,9 +55,9 @@ details (stored as a JSON encoded string):
 ```json
 {
   "table": "ifsapp.shop_ord_tab",
-  "trigger": "ifsapp.lpe_cdc_shop_ord",
-  "queue": "changedata.lpe_cdc_shop_ord",
-  "queue-table": "changedata.shop_ord",
+  "table-alias": "shop_ord",
+  "queue": "lpe_cdc_shop_ord",
+  "queue-table": "shop_ord",
   "status": "submitted",
   "timestamp": "20151113T132903.564Z"
 }
@@ -67,22 +67,23 @@ The table name is used as the message key so that the can be
 partitioned (if required) and reduced by key down to their latest
 state.
 
-Within the message body the `"table"`, `"trigger"`, `"queue"`, and
-`"queue-table"` entries specify the schema qualified name of the
-corresponding object used for change data capture.
+Within the message body `"table"` is the table from which changes are
+captured; `"queue"`, the Oracle Advanced Queue to which the changes
+are posted before being read and published to Kafka; and
+`"queue-table"` the backing table for that queue.
 
-`"table"` is the table from which changes are captured; `"trigger"`,
-the name of the capture trigger; `"queue"`, the Oracle Advanced Queue
-to which the changes are posted before being read and published to
-Kafka; and `"queue-table"` the backing table for that queue.
+Note that `"table"` must be schema qualified and will normally be in
+the IFS application owner schema whereas `"queue"` and `"queue-table"`
+should _not_ be schema qualified and will be created in the default
+schema of the user under which the service is running.
 
-Note that `"table"` and `"trigger"` will be in the IFS application
-owner schema whereas `"queue"` and `"queue-table"` should be in the
-default schema of the user under which the service is running.
+If the `"table"` name (the non-schema qualified basename of the table)
+exceeds 22 characters then a `"table-alias"` **must** be provided (it
+is optional for shorter table names.) This alias should be a suitable,
+unique, replacement for the table name that can be used when creating
+associated objects (triggers, etc.)
 
-`"trigger"` names (excluding the schema) must be 30 characters or
-shorter. `"queue"` and `"queue-table"` names must be 24 characters or
-shorter.
+`"queue"` and `"queue-table"` names must be 24 characters or shorter.
 
 Each message will also contain a ISO8601 `"timestamp"` string and a
 `"status"` which can be one of:
