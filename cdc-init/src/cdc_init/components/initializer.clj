@@ -8,6 +8,7 @@
             [cdc-util.async :refer [pipe-ret-last go-till-closed noop-transducer]]
             [cdc-util.filter :as filter]
             [cdc-util.kafka :refer :all]
+            [cdc-util.validate :refer [check-ccd]]
 
             [cdc-init.core :refer :all]))
 
@@ -49,17 +50,23 @@
    ch
    (fn [ccd _]
      (log/info "processing CCD for" (:table ccd))
-     (some-> ccd
-             (prepare change-data-store topic-store)
-             (pipe-ret-last updates-ch false)
-             async/<!!
-             ((fn [ccd]
-                (when (not= :error (:status ccd))
-                  (log/info "preparation complete for" (:table ccd) " now seeding")
-                  ccd)))
-             (initialize topic-store seed-store change-data-store)
-             (pipe-ret-last updates-ch false)
-             async/<!!)
+     (if-let [err (check-ccd ccd)]
+       (async/>!! updates-ch
+                  (update-status
+                   ccd :error
+                   {:error {:message "invalid specification"
+                            :info err}}))
+       (some-> ccd
+               (prepare change-data-store topic-store)
+               (pipe-ret-last updates-ch false)
+               async/<!!
+               ((fn [ccd]
+                  (when (not= :error (:status ccd))
+                    (log/info "preparation complete for" (:table ccd) " now seeding")
+                    ccd)))
+               (initialize topic-store seed-store change-data-store)
+               (pipe-ret-last updates-ch false)
+               async/<!!))
      (log/info "finished processing" (:table ccd)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

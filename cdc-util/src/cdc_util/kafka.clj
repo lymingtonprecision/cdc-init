@@ -88,8 +88,6 @@
 
   Returns the future encapsulating the send op."
   [kafka-producer topic ccd]
-  (if-let [json (some-> ccd validate-ccd format/ccd->json-str)]
-    (do
-      (log/debug "send-ccd" (select-keys ccd [:table :status :error :progress]))
-      (kafka/send kafka-producer (kafka/record topic (:table ccd) json)))
-    (log/error "send-ccd failed: invalid CCD record" ccd)))
+  (when-let [json (format/ccd->json-str ccd)]
+    (log/debug "send-ccd" (select-keys ccd [:table :status :error :progress]))
+    (kafka/send kafka-producer (kafka/record topic (:table ccd) json))))
