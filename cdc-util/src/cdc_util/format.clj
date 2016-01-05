@@ -1,7 +1,8 @@
 (ns cdc-util.format
   (:require [cheshire.core :as cheshire]
             [cheshire.generate :as cheshire.gen]
-            [clj-time.format :as time.format]))
+            [clj-time.format :as time.format]
+            [schema.utils]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Globals
@@ -20,6 +21,11 @@
     {:type (.getName (class ex))
      :message (.getMessage ex)}
     json)))
+
+(cheshire.gen/add-encoder
+ schema.utils.ValidationError
+ (fn [err json]
+   (.writeString json (pr-str err))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; utility fns

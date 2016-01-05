@@ -39,6 +39,13 @@
             (cheshire/generate-string {:error (Exception. msg)})
             true)))))
 
+(deftest encodes-validation-errors-as-strings
+  (let [err (schema/check s/Str 1)]
+    (is (= (pr-str err)
+           (cheshire/parse-string
+            (cheshire/generate-string err)
+            true)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ccd->msg / msg->ccd
 
