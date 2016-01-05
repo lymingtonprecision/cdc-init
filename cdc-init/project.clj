@@ -1,4 +1,4 @@
-(defproject lymingtonprecision/cdc-init "1.1.0-SNAPSHOT"
+(defproject lymingtonprecision/cdc-init "1.2.0"
   :description "LPE Change Data Capture initialization service"
   :url "https://github.com/lymingtonprecision/change-data-capture/cdc-init"
   :license {:name "Eclipse Public License"
@@ -27,7 +27,7 @@
                  [org.clojars.ah45/clj-kafka-util "0.1.1"]
 
                  ;; utils
-                 [lymingtonprecision/cdc-util "1.1.0"]]
+                 [lymingtonprecision/cdc-util "1.2.0"]]
 
   :main cdc-init.main
   :aot [cdc-init.main]
