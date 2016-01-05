@@ -56,8 +56,8 @@ details (stored as a JSON encoded string):
 {
   "table": "ifsapp.shop_ord_tab",
   "table-alias": "shop_ord",
-  "queue": "lpe_cdc_shop_ord",
-  "queue-table": "shop_ord",
+  "queue": "changedata.lpe_cdc_shop_ord",
+  "queue-table": "changedata.shop_ord",
   "status": "submitted",
   "timestamp": "20151113T132903.564Z"
 }
@@ -72,10 +72,12 @@ captured; `"queue"`, the Oracle Advanced Queue to which the changes
 are posted before being read and published to Kafka; and
 `"queue-table"` the backing table for that queue.
 
-Note that `"table"` must be schema qualified and will normally be in
-the IFS application owner schema whereas `"queue"` and `"queue-table"`
-should _not_ be schema qualified and will be created in the default
-schema of the user under which the service is running.
+Note that all three references (`"table"`, `"queue"`, and
+`"queue-table"`) must be schema qualified. The `"table"` will normally
+be in the IFS application owner schema whereas `"queue"` and
+`"queue-table"` should be in a schema dedicated to change data capture
+(typically the default schema for the account under which the service
+is running.)
 
 If the `"table"` name (the non-schema qualified basename of the table)
 exceeds 22 characters then a `"table-alias"` **must** be provided (it
@@ -84,6 +86,8 @@ unique, replacement for the table name that can be used when creating
 associated objects (triggers, etc.)
 
 `"queue"` and `"queue-table"` names must be 24 characters or shorter.
+
+The full `"queue"` reference is used as the Kafka topic name.
 
 Each message will also contain a ISO8601 `"timestamp"` string and a
 `"status"` which can be one of:

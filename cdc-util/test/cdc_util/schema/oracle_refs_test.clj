@@ -82,7 +82,11 @@
 ;; queue-ref
 
 (def gen-queue-ref
-  (gen/one-of [(gen-quoted-ref 24) (gen-unquoted-ref 24)]))
+  (gen/fmap
+   #(string/join "." %)
+   (gen/tuple
+    (gen-ref)
+    (gen/one-of [(gen-quoted-ref 24) (gen-unquoted-ref 24)]))))
 
 (defspec queue-refs
   (chuck/for-all
@@ -91,14 +95,18 @@
 
 (defspec invalid-queue-refs
   (chuck/for-all
-   [v gen-invalid-ref]
+   [v gen-invalid-schema-ref]
    (is (schema/check queue-ref v))))
 
 (deftest queue-refs-must-be-24-chars-or-less
-  (is (schema/check queue-ref (str "\"" (string/join (repeat 25 "a")) \")))
-  (is (nil? (schema/check queue-ref (str "\"" (string/join (repeat 24 "a")) \"))))
-  (is (schema/check queue-ref (string/join (repeat 25 "a"))))
-  (is (nil? (schema/check queue-ref (string/join (repeat 24 "a"))))))
+  (is (schema/check queue-ref (str "a.\"" (string/join (repeat 25 "a")) \")))
+  (is (nil? (schema/check queue-ref (str "a.\"" (string/join (repeat 24 "a")) \"))))
+  (is (schema/check queue-ref (str "a." (string/join (repeat 25 "a")))))
+  (is (nil? (schema/check queue-ref (str "a." (string/join (repeat 24 "a")))))))
+
+(deftest queue-refs-must-have-schemas
+  (is (schema/check queue-ref "a"))
+  (is (nil? (schema/check queue-ref "a.a"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; table-alias
