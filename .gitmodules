@@ -1,0 +1,4 @@
+[submodule "doc"]
+	path = doc
+	url = https://github.com/lymingtonprecision/change-data-capture
+	branch = gh-pages

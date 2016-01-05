@@ -34,5 +34,5 @@
   :plugins [[lein-codox "0.9.0"]]
 
   :codox {:metadata {:doc/format :markdown}
-          :output-path "./"
+          :output-path "../doc/cdc-util"
           :source-uri "https://github.com/lymingtonprecision/change-data-capture/blob/master/cdc-util/{filepath}#L{line}"})
