@@ -1,134 +1,119 @@
-# LPE Change Data Capture
+# LPE Change Data Capture Initialization (`cdc-init`)
 
-This project encompasses the background services required to enable
-Change Data Capture within our IFS application database and transfer
-the change messages to Apache Kafka for general availability and
-longer term storage.
+This service handles the multi-step process of enabling Change Data
+Capture on tables within the IFS database, reading requests from and
+posting progress updates to an Apache Kafka topic.
 
 ## Overview
 
-Change Data Capture is the process of recording all insert, update,
-and delete events within a RDBMS, in our case that is the Oracle based
-IFS database.
+This service will _only_ act upon messages posted to the control topic
+that have a `"status"` of `submitted`. The process it follows is:
 
-The _purpose_ of such a system is to enable stream processing of data
-modification events. Some use cases are:
+* Create the queue (and queue table if required) to record the Change
+  Data Capture messages to in the database.
+* Create the trigger to record Change Data Capture messsages on any
+  change to the specified table.
+* Create the Apache Kafka Topic to which the messages will ultimately
+  be recorded.
+* Seed the topic with "insert" messages for all existing rows of the
+  specified table.
+* Enable the trigger to capture modifications from the point of taking
+  a snapshot for seeding.
 
-* Keep a detailed history/record changes for auditing/logging.
-* Provide a central point from which to subscribe to events arising
-  from changing data.
-* Perform real time processing of business data.
+Progress updates are posted back to the same control topic from which
+the requests are read. The message bodies are updated with new
+`"timestamp"`s and `"status"`es, which may be one of:
 
-Capturing these events turns them into a universal pipeline of data—a
-global commit log—which can be consumed and processed in an unlimited
-number of ways. See the references at the end of this document for
-further reading on the subject.
+* `"queue-created"`
+* `"trigger-created"`
+* `"topic-created"`
+* `"prepared"` indicates that all of the required objects have been
+  created and the topic can now be seeded.
+* `"seeding"` sent multiple times during the seeding process with an
+  additional `"progress"` entry added to the message body which is a
+  tuple of `[records seeded, total selected]`.
+* `"error"` sent in the event of any error occurring during
+  processing, the error details are added under an `"error"` key.
 
-We use [Apache Kafka][kafka] as the backend/datastore for this event
-data as it is extremely efficient and eminently well suited to the
-task.
+## Usage
 
-[kafka]: http://kafka.apache.org/
+### Dependencies
 
-## Components
+Requires the following PL/SQL packages:
 
-There are two primary services:
+* `lpe_msg_queue_adm_api`
+* `lpe_msg_queue_api`
+* `lpe_change_data_capture_api`
 
-* [`cdc-init`](cdc-init/)
+Must be run under a user account with the following permissions:
 
-  Is responsible for initializing Change Data capture on database
-  tables, creating the queues and topics for message publication, and
-  seeding the Kafka topics with initial record collections.
-* [`cdc-publisher`](cdc-publisher/)
-
-  Is responsible for the ongoing publication of change messages from
-  the database to Kafka.
-
-## Control/Configuration
-
-Control of the change data capture system is accomplished by posting
-messages to an Apache Kafka topic that define the actions that should
-be undertaken. The topic is used as a state machine detailing the
-configuration of the system. Each message consists of the following
-details (stored as a JSON encoded string):
-
-```json
-{
-  "table": "ifsapp.shop_ord_tab",
-  "table-alias": "shop_ord",
-  "queue": "changedata.lpe_cdc_shop_ord",
-  "queue-table": "changedata.shop_ord",
-  "status": "submitted",
-  "timestamp": "20151113T132903.564Z"
-}
+```sql
+create user <username> identified by <password>
+  default tablespace <tablespace>
+  quota unlimited on <tablespace>;
+grant create session to <username>;
+grant execute on ifsapp.lpe_queue_msg to <username>;
+grant execute on ifsapp.lpe_msg_queue_adm_api to <username>;
+grant execute on ifsapp.lpe_msg_queue_api to <username>;
+grant execute on ifsapp.lpe_change_data_capture_api to <username>;
 ```
 
-The table name is used as the message key so that the can be
-partitioned (if required) and reduced by key down to their latest
-state.
+Note that, as per the `lpe_msg_queue*_api` guidelines the user should
+default to creating objects in a tablespace dedicated to Change Data
+Capture.
 
-Within the message body `"table"` is the table from which changes are
-captured; `"queue"`, the Oracle Advanced Queue to which the changes
-are posted before being read and published to Kafka; and
-`"queue-table"` the backing table for that queue.
+### Environment Variables
 
-Note that all three references (`"table"`, `"queue"`, and
-`"queue-table"`) must be schema qualified. The `"table"` will normally
-be in the IFS application owner schema whereas `"queue"` and
-`"queue-table"` should be in a schema dedicated to change data capture
-(typically the default schema for the account under which the service
-is running.)
+Required:
 
-If the `"table"` name (the non-schema qualified basename of the table)
-exceeds 22 characters then a `"table-alias"` **must** be provided (it
-is optional for shorter table names.) This alias should be a suitable,
-unique, replacement for the table name that can be used when creating
-associated objects (triggers, etc.)
+* `DB_NAME`
+* `DB_SERVER`
+* `DB_USER`
+* `DB_PASSWORD`
+* `ZOOKEEPER` the ZooKeeper connection string for the Kafka brokers.
 
-`"queue"` and `"queue-table"` names must be 24 characters or shorter.
+Optional:
 
-The full `"queue"` reference is used as the Kafka topic name.
+* `CONTROL_TOPIC` the name of the Kafka topic from which to read/post
+  requests and progress updates. Will default to `change-data-capture`.
 
-Each message will also contain a ISO8601 `"timestamp"` string and a
-`"status"` which can be one of:
+The control topic will be created if it does not exist.
 
-* `"submitted"` which indicates that the table has been submitted to
-  the Change Data Capture system, to be initialized and then monitored
-  and have its changes published.
-* `"active"` indicates that the table is actively being monitored and
-  its changes published to Kafka.
-* `"error"` which is recorded is there is an error establishing Change
-  Data Capture of occurring during operation that cannot be recovered
-  from. The error details are given under an `"error"` field.
+### Running
 
-There are several other intermediate states:
+In all cases you need to first establish the environment variables as
+detailed above. (Note: this project uses the [environ] library so any
+supported method—`ENV` vars, `.lein-env` files, etc.—will work.)
 
-* `"seeding"` which indicates that the topic is being seeded with the
-  details of records currently in the table. Each such message will
-  have an additional `"progress"` entry which is a tuple giving the
-  `[number of records processed, total number in table]`.
-* `"trigger-created"`, `"queue-created"`, and `"topic-created"` detail
-  that the corresponding action has taken place (and when, via the
-  timestamp.)
-* `"prepared"` logs the time at which the requisite
-  trigger/queue/topic were ready and seeding could be started.
+From the project directory:
 
-Refer to the individual sub-projects for further details/more specific
-information.
+    lein run
 
-## References
+Using a compiled `.jar` file:
 
-Pretty much anything [Martin Kleppmann][mkleppmann] has written or
-[Confluent] have posted to their blog. The following articles were
-particularly inspiring:
+    java -jar <path/to/cdc-init.jar>
 
-* [Turning the Database Inside Out](http://www.confluent.io/blog/turning-the-database-inside-out-with-apache-samza/)
-* [Putting Apache Kafka To Use](http://www.confluent.io/blog/stream-data-platform-1/)
-* [Using Logs to Build a Solid Data Infrastructure](http://www.confluent.io/blog/using-logs-to-build-a-solid-data-infrastructure-or-why-dual-writes-are-a-bad-idea/)
-* [Bottled Water: Real-Time Integration of PostgreSQL and Kafka](http://martin.kleppmann.com/2015/04/23/bottled-water-real-time-postgresql-kafka.html)
+As a [Docker] container:
 
-[mkleppmann]: http://martin.kleppmann.com/
-[Confluent]: http://www.confluent.io/
+    docker run \
+      -d \
+      --name=cdc-init \
+      -e DB_NAME=<database> \
+      -e DB_SERVER=<hostname> \
+      -e DB_USER=<username> \
+      -e DB_PASSWORD=<password> \
+      -e ZOOKEEPER=<connect string> \
+      lpe/cdc-init
+
+[environ]: https://github.com/weavejester/environ
+[Docker]: https://www.docker.com/
+
+## Building a Docker Image
+
+Nothing special, you just need to ensure you've built the uberjar first:
+
+    lein unberjar
+    docker build -t lpe/cdc-init:latest .
 
 ## License
 

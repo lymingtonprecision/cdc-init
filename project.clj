@@ -1,6 +1,6 @@
 (defproject lymingtonprecision/cdc-init "1.3.0-SNAPSHOT"
   :description "LPE Change Data Capture initialization service"
-  :url "https://github.com/lymingtonprecision/change-data-capture/cdc-init"
+  :url "https://github.com/lymingtonprecision/cdc-init"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.7.0"]

@@ -1,6 +1,6 @@
-*/target
-*/classes
-*/checkouts
+/target
+/classes
+/checkouts
 pom.xml
 pom.xml.asc
 *.jar
@@ -9,5 +9,5 @@ pom.xml.asc
 .nrepl-port
 .hgignore
 .hg/
-*/logs
+/logs
 /doc

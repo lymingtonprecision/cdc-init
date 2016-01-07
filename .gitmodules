@@ -1,4 +1,4 @@
-[submodule "doc"]
-	path = doc
-	url = https://github.com/lymingtonprecision/change-data-capture
-	branch = gh-pages
+[submodule "checkouts/cdc-util"]
+	path = checkouts/cdc-util
+	url = https://github.com/lymingtonprecision/cdc-util.git
+	branch = master
