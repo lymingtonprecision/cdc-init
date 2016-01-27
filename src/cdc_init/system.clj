@@ -21,5 +21,5 @@
     :kafka (new-kafka (:zookeeper env) "cdc-init")
     :change-data-store (new-change-data-store)
     :seed-store (new-seed-store)
-    :topic-store (new-topic-store)
+    :topic-store (new-topic-store (env :zookeeper))
     :initializer (new-initializer (get env :control-topic default-control-topic)))))
