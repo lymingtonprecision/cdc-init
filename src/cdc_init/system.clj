@@ -7,7 +7,6 @@
             [cdc-init.components.seed-store :refer [new-seed-store]]
             [cdc-init.components.topic-store :refer [new-topic-store]]
             [cdc-util.components.database :refer [new-database-from-env]]
-            [cdc-util.components.kafka :refer [new-kafka]]
             [cdc-util.kafka :refer [default-control-topic]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -18,8 +17,9 @@
   ([env]
    (component/system-map
     :database (new-database-from-env env)
-    :kafka (new-kafka (:zookeeper env) "cdc-init")
     :change-data-store (new-change-data-store)
     :seed-store (new-seed-store)
     :topic-store (new-topic-store (env :zookeeper))
-    :initializer (new-initializer (get env :control-topic default-control-topic)))))
+    :initializer (new-initializer
+                  (env :zookeeper)
+                  (env :control-topic default-control-topic)))))

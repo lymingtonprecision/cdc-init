@@ -27,7 +27,7 @@
                  [org.clojars.ah45/clj-kafka-util "0.1.1"]
 
                  ;; utils
-                 [lymingtonprecision/cdc-util "1.2.0"]]
+                 [lymingtonprecision/cdc-util "1.2.2"]]
 
   :main cdc-init.main
   :aot [cdc-init.main]
