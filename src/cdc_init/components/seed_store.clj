@@ -54,6 +54,32 @@
   {:key (cheshire/generate-string (flatten (sort-by first (vec (:id dml)))))
    :value (cheshire/generate-string dml)})
 
+(defn seed-results-onto-chan
+  "Given a JDBC `ResultSet` for a seed view, loops over every row in the result
+  set, coverts it to a DML seed message, and puts the message onto the provided
+  channel.
+
+  Does what it can to avoid creating lazy sequences or otherwise holding onto
+  each row/message after it has been read."
+  [ch rs]
+  (let [rsmeta (.getMetaData rs)
+        idxs (range 1 (inc (.getColumnCount rsmeta)))
+        keys (->> idxs
+                  (map (fn [^Integer i] (.getColumnLabel rsmeta i)))
+                  (#'jdbc/make-cols-unique)
+                  (map (comp keyword string/lower-case)))
+        row-values (fn []
+                     (map
+                      (fn [^Integer i]
+                        (jdbc/result-set-read-column
+                         (.getObject rs i)
+                         rsmeta i))
+                      idxs))]
+    (while (.next rs)
+      (let [row (zipmap keys (row-values))
+            dml (-> row seed-row->dml-msg dml-msg->seed-msg)]
+        (async/>!! ch dml)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Component
 
@@ -81,12 +107,7 @@
               (jdbc/db-query-with-resultset
                db
                [(str "select * from " seed-view)]
-               (fn [rs]
-                 (async/<!!
-                  (async/onto-chan
-                   ch
-                   (map (comp dml-msg->seed-msg seed-row->dml-msg)
-                        (jdbc/result-set-seq rs))))))))
+               (partial seed-results-onto-chan ch))))
           (finally
             (try (drop-seed-view! table-ref {:connection database})
                  (catch Exception e nil))
